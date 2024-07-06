@@ -17,10 +17,11 @@ from typing import List
 import telethon
 from telethon import types
 from telethon.events import ChatAction
-from telethon.tl.functions.channels import EditBannedRequest, EditAdminRequest
-from telethon.tl.types import ChatBannedRights, ChannelParticipantAdmin, ChannelAdminRights
+from telethon.tl.functions.channels import EditBannedRequest
+from telethon.tl.types import ChatBannedRights
 
 from .. import loader, utils  # type: ignore
+
 
 @loader.tds
 class VerifyMod(loader.Module):
@@ -33,7 +34,7 @@ class VerifyMod(loader.Module):
         ),
         "verify_status": "<b>[Verify]</b> {}",
         "verify_success": "✅ <a href='tg://user?id={}'>You have been verified!</a>",
-        "verify_fail": "❌ <a href='tg://user?id={}'>You have failed to verify and have been kicked.",
+        "verify_fail": "❌ <a href='tg://user?id={}'>You have failed to verify and have been kicked.</a>",
     }
     
     class CUserModel(pydantic.BaseModel):
@@ -80,16 +81,16 @@ class VerifyMod(loader.Module):
         "Turn on captcha in chat"
         l: list = self.db.get(self._db, "chats", [])
         if m.chat_id in l:
-            return await utils.answer(m, self.strings("verify_status").format("already ON"))
+            return await utils.answer(m, self.strings["verify_status"].format("already ON"))
         l.append(m.chat_id)
         self.db.set(self._db, "chats", l)
-        await utils.answer(m, self.strings("verify_status").format("ON"))
+        await utils.answer(m, self.strings["verify_status"].format("ON"))
 
     async def chatcaptchaoffcmd(self, m: types.Message):
         "Turn off captcha in chat"
         l: list = self.db.get(self._db, "chats", [])
         if m.chat_id not in l:
-            return await utils.answer(m, self.strings("verify_status").format("already OFF"))
+            return await utils.answer(m, self.strings["verify_status"].format("already OFF"))
         l.remove(m.chat_id)
         self.db.set(self._db, "chats", l)
-        await utils.answer(m, self.strings("verify_status").format("OFF"))
+        await utils.answer(m, self.strings["verify_status"].format("OFF"))
