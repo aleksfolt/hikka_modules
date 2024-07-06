@@ -3,7 +3,7 @@
 # ( o.o )  🔓 Not licensed.
 #  > ^ <   ⚠️ Owner of heta.hikariatama.ru doesn't take any responsibilities or intellectual property rights regarding this script
 # ---------------------------------------------------------------------------------
-# Name: Captcha
+# Name: Concha
 # Author: AleksFolt
 # Commands:
 # .chatcaptchaon
