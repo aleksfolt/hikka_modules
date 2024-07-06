@@ -83,7 +83,7 @@ class CaptchaMod(loader.Module):
                         continue
                     self.locked_users.append(self.CUserModel(chat=m.chat_id, user=u.id, message=0))
                     await client(EditBannedRequest(m.chat_id, u.id, ChatBannedRights(until_date=None, send_messages=True)))
-                    msg = await client.send_message(m.chat_id, self.strings["pls_pass_captcha"].format(u.id), buttons=[types.KeyboardButtonCallback("Verify", data=f"verify_{u.id}")])
+                    msg = await client.send_message(m.chat_id, self.strings["pls_pass_captcha"].format(u.id), buttons=[types.KeyboardButtonInline("Verify", data=f"verify_{u.id}")])
                     self.locked_users[-1].message = msg.id
                 
                 await asyncio.sleep(1200)
@@ -118,8 +118,7 @@ class CaptchaMod(loader.Module):
         self.db.set(self._db, "chats", l)
         await utils.answer(m, self.strings["captcha_status"].format("OFF"))
 
-    @loader.inline_everyone
-    async def on_inline_callback_query(self, call: types.CallbackQuery):
+    async def on_callback_query(self, call: types.CallbackQuery):
         "Handle inline button clicks"
         data = call.data.decode("utf-8")
         if data.startswith("verify_"):
