@@ -3,7 +3,7 @@
 # ( o.o )  🔓 Not licensed.
 #  > ^ <   ⚠️ Owner of heta.hikariatama.ru doesn't take any responsibilities or intellectual property rights regarding this script
 # ---------------------------------------------------------------------------------
-# Name: Concha
+# Name: Captcha
 # Author: AleksFolt
 # Commands:
 # .ccaptchaon
@@ -12,7 +12,6 @@
 
 # meta developer: @aleksfolt
 
-import asyncio
 import logging
 from typing import List
 
