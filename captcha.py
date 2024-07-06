@@ -29,7 +29,7 @@ __version__ = (1, 0, 0)
 
 import logging
 
-from telethon import TelegramClient
+from telethon import TelegramClient, events
 
 from .. import loader  # type: ignore
 from ..inline.types import InlineCall  # type: ignore
@@ -59,16 +59,16 @@ class CaptchaMod(loader.Module):
         self._db = db
         self._client = client
         self.captcha_enabled = False
-        self._client.add_event_handler(self.on_new_member, event=NewChatMembers())
+        self._client.add_event_handler(self.on_new_member, events.ChatAction())
 
     async def on_new_member(self, event):
-        if self.captcha_enabled:
-            for member in event.users:
-                await self._client.edit_permissions(event.chat_id, member.id, send_messages=False)
-                button = [{"text": "Пройти проверку", "callback": self.verify_user, "args": [member.id]}]
+        if event.user_added and self.captcha_enabled:
+            for user in event.users:
+                await self._client.edit_permissions(event.chat_id, user.id, send_messages=False)
+                button = [{"text": "Пройти проверку", "callback": self.verify_user, "args": [user.id]}]
                 await self.inline.form(
-                    text=self.strings["verification_prompt"].format(member.first_name),
-                    message=event.message,
+                    text=self.strings["verification_prompt"].format(user.first_name),
+                    chat_id=event.chat_id,
                     reply_markup=button,
                 )
 
