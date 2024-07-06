@@ -1,47 +1,35 @@
 # ---------------------------------------------------------------------------------
 #  /\_/\  🌐 This module was loaded through https://t.me/hikkamods_bot
-# ( o.o )  🔐 Licensed under the Copyleft license.
+# ( o.o )  🔓 Not licensed.
 #  > ^ <   ⚠️ Owner of heta.hikariatama.ru doesn't take any responsibilities or intellectual property rights regarding this script
 # ---------------------------------------------------------------------------------
-# Name: captcha
+# Name: Concha
 # Author: AleksFolt
 # Commands:
 # .ccaptchaon
 # .ccaptchaoff
 # ---------------------------------------------------------------------------------
 
-"""
-                                _             
-  __   _____  ___  ___ ___   __| | ___ _ __   
-  \ \ / / __|/ _ \/ __/ _ \ / _` |/ _ \ '__|  
-   \ V /\__ \  __/ (_| (_) | (_| |  __/ |     
-    \_/ |___/\___|\___\___/ \__,_|\___|_|     
-
-    Copyleft 2024 t.me/aleksfolt                                                            
-    This program is free software; you can redistribute it and/or modify 
-
-"""
 # meta developer: @aleksfolt
-# meta pic: https://img.icons8.com/color/344/captcha.png
-# meta banner: https://chojuu.vercel.app/api/banner?img=https://img.icons8.com/color/344/captcha.png&title=Captcha&description=Module%20for%20inline%20captcha
 
-__version__ = (1, 0, 0)
-
+import asyncio
 import logging
+from typing import List
 
 from telethon import TelegramClient, events
+from telethon.tl.functions.channels import EditBannedRequest
+from telethon.tl.types import ChatBannedRights
 
-from .. import loader  # type: ignore
-from ..inline.types import InlineCall  # type: ignore
+from .. import loader, utils  # type: ignore
 
 logger = logging.getLogger(__name__)
 
 @loader.tds
 class CaptchaMod(loader.Module):
-    """Module for inline captcha"""
+    """Captcha for chats"""
 
     strings = {
-        "name": "🛡 Captcha",
+        "name": "Captcha",
         "captcha_enabled": "🔐 <b>Captcha enabled. New members will be muted until verification.</b>",
         "captcha_disabled": "🔓 <b>Captcha disabled. New members will not be muted.</b>",
         "verification_prompt": "🔒 <b>Welcome, {0}! Please verify by clicking the button below:</b>",
@@ -56,12 +44,13 @@ class CaptchaMod(loader.Module):
     }
 
     async def client_ready(self, client: TelegramClient, db):
-        self._db = db
+        self.db = db
         self._client = client
         self.captcha_enabled = False
-        self._client.add_event_handler(self.on_new_member, events.ChatAction())
+        self.locked_users: List[dict] = []
+        self._client.add_event_handler(self.on_new_member, events.ChatAction)
 
-    async def on_new_member(self, event):
+    async def on_new_member(self, event: events.ChatAction.Event):
         if event.user_added and self.captcha_enabled:
             for user in event.users:
                 await self._client.edit_permissions(event.chat_id, user.id, send_messages=False)
@@ -71,11 +60,13 @@ class CaptchaMod(loader.Module):
                     chat_id=event.chat_id,
                     reply_markup=button,
                 )
+                self.locked_users.append({"chat_id": event.chat_id, "user_id": user.id})
 
-    async def verify_user(self, call: InlineCall, user_id):
+    async def verify_user(self, call, user_id):
         if call.from_user.id == user_id:
             await self._client.edit_permissions(call.message.chat_id, user_id, send_messages=True)
             await call.answer(self.strings["verification_success"], show_alert=True)
+            self.locked_users = [user for user in self.locked_users if user["user_id"] != user_id]
 
     @loader.unrestricted
     @loader.ratelimit
@@ -84,7 +75,7 @@ class CaptchaMod(loader.Module):
         - enable captcha
         """
         self.captcha_enabled = True
-        await message.reply(self.strings["captcha_enabled"])
+        await utils.answer(message, self.strings["captcha_enabled"])
 
     @loader.unrestricted
     @loader.ratelimit
@@ -93,4 +84,4 @@ class CaptchaMod(loader.Module):
         - disable captcha
         """
         self.captcha_enabled = False
-        await message.reply(self.strings["captcha_disabled"])
+        await utils.answer(message, self.strings["captcha_disabled"])
