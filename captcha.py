@@ -37,7 +37,7 @@ import aiohttp
 import pydantic
 import telethon
 from telethon import types
-from telethon.events import ChatAction
+from telethon.events import ChatAction, CallbackQuery
 from telethon.tl.functions.channels import EditBannedRequest
 from telethon.tl.types import ChatBannedRights
 
@@ -83,7 +83,7 @@ class CaptchaMod(loader.Module):
                         continue
                     self.locked_users.append(self.CUserModel(chat=m.chat_id, user=u.id, message=0))
                     await client(EditBannedRequest(m.chat_id, u.id, ChatBannedRights(until_date=None, send_messages=True)))
-                    msg = await client.send_message(m.chat_id, self.strings["pls_pass_captcha"].format(u.id), buttons=[types.KeyboardButtonInline("Verify", data=f"verify_{u.id}")])
+                    msg = await client.send_message(m.chat_id, self.strings["pls_pass_captcha"].format(u.id), buttons=[types.KeyboardButtonCallback("Verify", data=f"verify_{u.id}")])
                     self.locked_users[-1].message = msg.id
                 
                 await asyncio.sleep(1200)
@@ -118,13 +118,13 @@ class CaptchaMod(loader.Module):
         self.db.set(self._db, "chats", l)
         await utils.answer(m, self.strings["captcha_status"].format("OFF"))
 
-    async def on_callback_query(self, call: types.CallbackQuery):
+    async def on_callback_query_handler(self, event: CallbackQuery.Event):
         "Handle inline button clicks"
-        data = call.data.decode("utf-8")
+        data = event.data.decode("utf-8")
         if data.startswith("verify_"):
             user_id = int(data.split("_")[1])
-            for locked_user in list(filter(lambda x: x.chat == call.chat_id and x.user == user_id, self.locked_users)):
+            for locked_user in list(filter(lambda x: x.chat == event.chat_id and x.user == user_id, self.locked_users)):
                 self.locked_users.remove(locked_user)
-                await call.client(EditBannedRequest(locked_user.chat, locked_user.user, ChatBannedRights(until_date=None, send_messages=None)))
-                await call.delete()
-                await call.client.send_message(locked_user.chat, self.strings["verify_success"].format(locked_user.user))
+                await event.client(EditBannedRequest(locked_user.chat, locked_user.user, ChatBannedRights(until_date=None, send_messages=None)))
+                await event.answer()
+                await event.client.send_message(locked_user.chat, self.strings["verify_success"].format(locked_user.user))
