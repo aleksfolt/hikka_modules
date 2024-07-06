@@ -4,7 +4,7 @@
 #  > ^ <   ⚠️ Owner of heta.hikariatama.ru doesn't take any responsibilities or intellectual property rights regarding this script
 # ---------------------------------------------------------------------------------
 # Name: Captcha
-# Author: D4n13l3k00
+# Author: AleksFolt
 # Commands:
 # .chatcaptchaon
 # .chatcaptchaoff
