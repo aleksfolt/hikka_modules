@@ -15,7 +15,7 @@ def is_owner(_, __, message):
     return message.from_user.id == OWNER_ID
 
 def log_message(message):
-    print(f"Chat ID: {message.chat.id}, User ID: {message.from_user.id}, Message: {message.text}")
+    pass
 
 def register_module(app: Client):
     @app.on_message(filters.create(is_owner) & filters.command("online", prefixes=prefix_userbot))
