@@ -6,6 +6,9 @@ with open("Yuki.bot", "r") as file:
     lines = file.readlines()
     prefix_userbot = lines[2].strip().split('=')[1]
 
+cinfo = f"🕒`{prefix_userbot}time`"
+ccomand = " показывает текущее время в указанном городе. Пример: `time Europe/Moscow`"
+
 def register_module(app: Client):
     @app.on_message(filters.command("time", prefixes=prefix_userbot))
     async def time(_, message):
