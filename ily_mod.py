@@ -232,6 +232,10 @@ class ILYMod:
 def register_module(app: Client):
     ily_mod = ILYMod(app)
 
-    @app.on_message(filters.create(is_owner) & filters.command("ily", prefixes="."))
+    @app.on_message(filters.create(is_owner) & filters.command("ily", prefixes=prefix_userbot))
     async def ily(client, message):
         await ily_mod.ilycmd(client, message)
+
+app = Client("my_account")
+register_module(app)
+app.run()
